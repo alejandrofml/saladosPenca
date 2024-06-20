@@ -32,7 +32,11 @@
 
     <main class="container mt-4">
         <div id="alert-container"></div>
-
+        <div id="loader" style="display: none; text-align: center;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
         <section id="registrarse" style="display:none;">
             <h2 class="text-center">Registrarse</h2>
             <form id="form-registrarse" class="mb-4 mx-auto" style="max-width: 400px;">
@@ -80,7 +84,7 @@
         </section>
 
         <section id="posiciones" style="display:none;">
-            <h2 class="text-center">Tabla de Posiciones</h2>
+            <h2>Tabla de Posiciones</h2>
             <table class="table table-striped" id="tabla-posiciones">
                 <!-- Aquí se llenará la tabla de posiciones -->
             </table>
