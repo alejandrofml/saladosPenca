@@ -20,7 +20,14 @@ const esPartidoPasado = (fecha, hora) => {
 
 };
 
-console
+const mostrarLoader = () => {
+    document.getElementById('loader').style.display = 'block';
+};
+
+const ocultarLoader = () => {
+    document.getElementById('loader').style.display = 'none';
+};
+
 const API_URL = "https://api.jsonbin.io/v3/b/66721024acd3cb34a8597582";
 const API_KEY = "$2a$10$y7zs4M9/QpacoFMTCNwtjeRxmFar26.OFN6n8QBTEVa9kcY2bNAU6";
 
@@ -72,9 +79,8 @@ const registrarUsuario = async (usuario, contrasena) => {
                 body: JSON.stringify(updatedData)
             });
             if (saveResponse.ok) {
-                mostrarAlerta('Usuario registrado correctamente', 'success');
-                await iniciarSesion(usuario, contrasena);  // Iniciar sesión automáticamente
-                mostrarSeccion('jugar');  // Cambiar a la sección de "Jugar"
+                mostrarAlerta('Usuario registrado correctamente', 'success');// Iniciar sesión automáticamente
+                limpiarSecciones();
             } else {
                 mostrarAlerta('Error al registrar el usuario', 'danger');
             }
@@ -113,8 +119,8 @@ const iniciarSesion = async (usuario, contrasena) => {
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
     }
+    cargarPosiciones();
 };
-
 
 const generarCartasPartidos = () => {
     const contenedorPartidos = document.getElementById("partidos");
@@ -151,6 +157,7 @@ const generarCartasPartidos = () => {
 
     actualizarBotonGuardar();
 };
+
 
 
 
@@ -241,7 +248,7 @@ const guardarJugada = async () => {
             if (saveResponse.ok) {
                 mostrarAlerta('Jugadas guardadas correctamente', 'success');
                 usuarioActual.jugadas = [...updatedJugadas.filter(j => j.usuario === usuarioActual.usuario)];
-                cargarPosiciones(); // Actualizar la tabla de posiciones
+                await cargarPosiciones(); // Actualizar la tabla de posiciones
             } else {
                 mostrarAlerta('Error al guardar las jugadas', 'danger');
             }
@@ -249,11 +256,13 @@ const guardarJugada = async () => {
     } catch (error) {
         console.error('Error al guardar las jugadas:', error);
     }
+    cargarPosiciones();
 };
 
 
 document.addEventListener("DOMContentLoaded", () => {
     cargarPartidos(); // Cargar partidos al cargar la página
+    cargarPosiciones(); // Cargar posiciones al cargar la página
 
     const formRegistrarse = document.getElementById("form-registrarse");
     const formLogin = document.getElementById("form-login");
@@ -300,6 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 const cargarPosiciones = async () => {
+
+    mostrarLoader()
     try {
         const response = await fetch(`${API_URL}/latest`, {
             method: 'GET',
@@ -360,11 +371,15 @@ const cargarPosiciones = async () => {
                 `;
                 tabla.appendChild(fila);
             });
+        } else {
+            console.error('Error al obtener los datos de la API:', response.statusText);
         }
     } catch (error) {
         console.error('Error al cargar las posiciones:', error);
     }
+    ocultarLoader();
 };
+
 
 const guardarResultado = async (resultado) => {
     try {
@@ -398,6 +413,8 @@ const guardarResultado = async (resultado) => {
     } catch (error) {
         console.error('Error:', error);
     }
+
+    cargarPosiciones();
 };
 
 const cargarMisJugadas = async (nombreUsuario) => {
@@ -470,6 +487,7 @@ const cargarMisJugadas = async (nombreUsuario) => {
     } catch (error) {
         console.error('Error al cargar las jugadas:', error);
     }
+    cargarPosiciones();
 };
 
 const eliminarUsuario = async (nombreUsuario) => {
@@ -514,6 +532,7 @@ const eliminarUsuario = async (nombreUsuario) => {
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
     }
+    cargarPosiciones();
 };
 
 
@@ -607,7 +626,7 @@ const guardarResultadoReal = async (partidoId) => {
 
                 if (saveResponse.ok) {
                     mostrarAlerta('Resultado guardado correctamente', 'success');
-                    cargarPosiciones(); // Actualizar la tabla de posiciones
+                    await cargarPosiciones(); // Actualizar la tabla de posiciones
                     mostrarPartidosAdmin(); // Actualizar la vista después de guardar el resultado
                 } else {
                     mostrarAlerta('Error al guardar el resultado', 'danger');
@@ -619,7 +638,9 @@ const guardarResultadoReal = async (partidoId) => {
     } else {
         mostrarAlerta('Por favor ingrese ambos resultados.', 'danger');
     }
+    cargarPosiciones();
 };
+
 
 const limpiarSecciones = () => {
     document.getElementById('form-login').reset();
@@ -632,6 +653,8 @@ const limpiarSecciones = () => {
     document.getElementById('resultados-partidos').innerHTML = '';
     document.getElementById('lista-jugadas').innerHTML = '';
     document.getElementById('tabla-posiciones').innerHTML = '';
+
+    cargarPosiciones();
 };
 
 const navbarNav = document.getElementById('navbarNav');
@@ -652,11 +675,19 @@ const mostrarSeccion = (seccion) => {
         sec.style.display = (sec.id === seccion) ? 'block' : 'none';
     });
 
+    // Recargar partidos cuando se muestra la sección "Jugar"
+    if (seccion === 'jugar') {
+        generarCartasPartidos();
+    }
+
     // Contraer el menú después de seleccionar una sección
     if (navbarNav.classList.contains('show')) {
         new bootstrap.Collapse(navbarNav).toggle();
     }
+
+    cargarPosiciones();
 };
+
 
 
 const autenticarAdmin = (event) => {
@@ -671,6 +702,7 @@ const autenticarAdmin = (event) => {
     } else {
         mostrarAlerta('Usuario o contraseña incorrectos', 'danger');
     }
+    cargarPosiciones();
 };
 
 
